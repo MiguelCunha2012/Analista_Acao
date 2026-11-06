@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+  Navegação principal.
+  • Desktop: menu lateral FIXO (FlyoutBehavior=Locked) em verde escuro.
+  • Mobile: o mesmo menu vira um flyout "hambúrguer".
+  A barra superior (navbar) também usa o verde da marca nos dois temas.
+-->
+<Shell x:Class="AnalistaAcao.AppShell"
+       xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+       xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+       xmlns:views="clr-namespace:AnalistaAcao.Views"
+       Title="Analista Ação"
+       FlyoutBehavior="{OnIdiom Desktop=Locked, Default=Flyout}"
+       FlyoutWidth="240"
+       FlyoutBackgroundColor="{AppThemeBinding Light={StaticResource Brand}, Dark={StaticResource BrandDeep}}"
+       Shell.BackgroundColor="{AppThemeBinding Light={StaticResource Brand}, Dark={StaticResource BrandDark}}"
+       Shell.ForegroundColor="{StaticResource OnBrand}"
+       Shell.TitleColor="{StaticResource OnBrand}"
+       Shell.UnselectedColor="{StaticResource OnBrandMuted}"
+       Shell.NavBarHasShadow="False">
+
+    <!-- Cabeçalho do menu lateral -->
+    <Shell.FlyoutHeader>
+        <Grid Padding="24,28,24,20" ColumnDefinitions="Auto,*" ColumnSpacing="12">
+            <Border WidthRequest="36" HeightRequest="36" StrokeThickness="0"
+                    StrokeShape="RoundRectangle 10" BackgroundColor="{StaticResource BrandAccent}">
+                <Label Text="↗" FontSize="20" FontAttributes="Bold" TextColor="{StaticResource BrandDeep}"
+                       HorizontalOptions="Center" VerticalOptions="Center" />
+            </Border>
+            <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="0">
+                <Label Text="Analista Ação" FontSize="17" FontAttributes="Bold" TextColor="{StaticResource OnBrand}" />
+                <Label Text="Mercado B3 · brapi.dev" FontSize="11" TextColor="{StaticResource OnBrandMuted}" />
+            </VerticalStackLayout>
+        </Grid>
+    </Shell.FlyoutHeader>
+
+    <!-- Aparência dos itens do menu (com estado Selecionado) -->
+    <Shell.ItemTemplate>
+        <DataTemplate x:DataType="BaseShellItem">
+            <Grid Padding="16,0" HeightRequest="46" Margin="12,2">
+                <VisualStateManager.VisualStateGroups>
+                    <VisualStateGroupList>
+                        <VisualStateGroup x:Name="CommonStates">
+                            <VisualState x:Name="Normal">
+                                <VisualState.Setters>
+                                    <Setter Property="BackgroundColor" Value="Transparent" />
+                                </VisualState.Setters>
+                            </VisualState>
+                            <VisualState x:Name="Selected">
+                                <VisualState.Setters>
+                                    <Setter Property="BackgroundColor" Value="{StaticResource BrandSelected}" />
+                                </VisualState.Setters>
+                            </VisualState>
+                        </VisualStateGroup>
+                    </VisualStateGroupList>
+                </VisualStateManager.VisualStateGroups>
+                <Label Text="{Binding Title}" FontSize="14" FontAttributes="Bold"
+                       TextColor="{StaticResource OnBrand}" VerticalOptions="Center" />
+            </Grid>
+        </DataTemplate>
+    </Shell.ItemTemplate>
+
+    <Shell.FlyoutFooter>
+        <Label Text="Dados com atraso · uso informativo" FontSize="11" Padding="24,16"
+               TextColor="{StaticResource OnBrandMuted}" />
+    </Shell.FlyoutFooter>
+
+    <FlyoutItem Title="Dashboard" Route="dashboard">
+        <ShellContent ContentTemplate="{DataTemplate views:DashboardPage}" />
+    </FlyoutItem>
+
+    <FlyoutItem Title="Meus Favoritos" Route="favorites">
+        <ShellContent ContentTemplate="{DataTemplate views:FavoritesPage}" />
+    </FlyoutItem>
+
+    <FlyoutItem Title="Configurações" Route="settings">
+        <ShellContent ContentTemplate="{DataTemplate views:SettingsPage}" />
+    </FlyoutItem>
+
+</Shell>

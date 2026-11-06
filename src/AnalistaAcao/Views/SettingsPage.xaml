@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:AnalistaAcao.ViewModels"
+             x:Class="AnalistaAcao.Views.SettingsPage"
+             x:DataType="vm:SettingsViewModel"
+             Title="{Binding Title}">
+
+    <ScrollView>
+        <VerticalStackLayout Spacing="20" Padding="{OnIdiom Desktop='32,28', Default='16,16'}" MaximumWidthRequest="760"
+                             HorizontalOptions="Start">
+
+            <Label Text="Configurações" Style="{StaticResource PageTitle}" />
+
+            <!-- ================= Token da brapi ================= -->
+            <Border Style="{StaticResource Card}">
+                <VerticalStackLayout Spacing="12">
+                    <Label Text="Token da brapi.dev" Style="{StaticResource SectionTitle}" />
+                    <Label Style="{StaticResource Muted}"
+                           Text="O token é armazenado criptografado pelo sistema operacional (SecureStorage) e nunca fica no código-fonte." />
+
+                    <Border StrokeShape="RoundRectangle 10" Padding="12,2"
+                            Stroke="{AppThemeBinding Light={StaticResource BorderLight}, Dark={StaticResource BorderDark}}">
+                        <Entry Text="{Binding ApiKeyInput}" IsPassword="True" Placeholder="Cole aqui seu token" />
+                    </Border>
+
+                    <HorizontalStackLayout Spacing="10">
+                        <Button Text="Salvar token" Command="{Binding SaveKeyCommand}" />
+                        <Button Text="Remover" Style="{StaticResource GhostButton}" Command="{Binding ClearKeyCommand}" />
+                    </HorizontalStackLayout>
+
+                    <Label Text="{Binding KeyStatus}" Style="{StaticResource Caption}" />
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- ================= Tema ================= -->
+            <Border Style="{StaticResource Card}">
+                <VerticalStackLayout Spacing="12">
+                    <Label Text="Aparência" Style="{StaticResource SectionTitle}" />
+                    <Border StrokeShape="RoundRectangle 10" Padding="12,2"
+                            Stroke="{AppThemeBinding Light={StaticResource BorderLight}, Dark={StaticResource BorderDark}}">
+                        <Picker ItemsSource="{Binding ThemeOptions}" SelectedIndex="{Binding SelectedThemeIndex}"
+                                Title="Tema" />
+                    </Border>
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- ================= Banco local ================= -->
+            <Border Style="{StaticResource Card}">
+                <VerticalStackLayout Spacing="8">
+                    <Label Text="Banco de dados local" Style="{StaticResource SectionTitle}" />
+                    <Label Text="{Binding DatabasePath}" Style="{StaticResource Caption}" LineBreakMode="CharacterWrap" />
+                </VerticalStackLayout>
+            </Border>
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

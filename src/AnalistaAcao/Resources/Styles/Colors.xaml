@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<?xaml-comp compile="true" ?>
+<!--
+  Design tokens. Cada cor tem variação Light/Dark e é consumida via AppThemeBinding,
+  então a troca de tema é instantânea em todo o app.
+-->
+<ResourceDictionary xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
+
+    <!-- Marca: verde escuro elegante (navbar / flyout) -->
+    <Color x:Key="Brand">#064E3B</Color>
+    <Color x:Key="BrandDark">#053B2D</Color>
+    <Color x:Key="BrandDeep">#022C22</Color>
+    <Color x:Key="BrandAccent">#34D399</Color>
+    <Color x:Key="OnBrand">#FFFFFF</Color>
+    <Color x:Key="OnBrandMuted">#A7F3D0</Color>
+    <Color x:Key="BrandSelected">#0B6B52</Color>
+
+    <!-- Alta / Baixa: vibrantes, com variação para contraste em cada tema -->
+    <Color x:Key="GainLight">#16A34A</Color>
+    <Color x:Key="GainDark">#22C55E</Color>
+    <Color x:Key="GainSoftLight">#DCFCE7</Color>
+    <Color x:Key="GainSoftDark">#0F2E1E</Color>
+
+    <Color x:Key="LossLight">#DC2626</Color>
+    <Color x:Key="LossDark">#F43F5E</Color>
+    <Color x:Key="LossSoftLight">#FEE2E2</Color>
+    <Color x:Key="LossSoftDark">#3A1219</Color>
+
+    <!-- Superfícies -->
+    <Color x:Key="BackgroundLight">#F4F6F5</Color>
+    <Color x:Key="BackgroundDark">#0B110F</Color>
+    <Color x:Key="SurfaceLight">#FFFFFF</Color>
+    <Color x:Key="SurfaceDark">#131B18</Color>
+    <Color x:Key="SurfaceAltLight">#EEF2F0</Color>
+    <Color x:Key="SurfaceAltDark">#1A2420</Color>
+    <Color x:Key="BorderLight">#E4E9E7</Color>
+    <Color x:Key="BorderDark">#24302B</Color>
+
+    <!-- Texto -->
+    <Color x:Key="TextPrimaryLight">#0F1A16</Color>
+    <Color x:Key="TextPrimaryDark">#ECF3F0</Color>
+    <Color x:Key="TextSecondaryLight">#5B6B65</Color>
+    <Color x:Key="TextSecondaryDark">#93A39D</Color>
+
+</ResourceDictionary>

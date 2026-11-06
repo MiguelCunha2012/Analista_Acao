@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:AnalistaAcao.ViewModels"
+             xmlns:models="clr-namespace:AnalistaAcao.Models"
+             x:Class="AnalistaAcao.Views.FavoritesPage"
+             x:DataType="vm:FavoritesViewModel"
+             Title="{Binding Title}">
+
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Text="Atualizar cotações" Command="{Binding RefreshQuotesCommand}" />
+    </ContentPage.ToolbarItems>
+
+    <Grid RowDefinitions="Auto,Auto,*" RowSpacing="20" Padding="{OnIdiom Desktop='32,28', Default='16,16'}">
+
+        <VerticalStackLayout Spacing="4">
+            <Label Text="Meus Favoritos" Style="{StaticResource PageTitle}" />
+            <Label Text="Salvos localmente neste computador (SQLite)." Style="{StaticResource Muted}" />
+        </VerticalStackLayout>
+
+        <Border Grid.Row="1" Style="{StaticResource ErrorBanner}" IsVisible="{Binding HasError}">
+            <Label Text="{Binding ErrorMessage}"
+                   TextColor="{AppThemeBinding Light={StaticResource LossLight}, Dark={StaticResource LossDark}}" />
+        </Border>
+
+        <Border Grid.Row="2" Style="{StaticResource Card}" Padding="12,8">
+            <Grid>
+                <CollectionView ItemsSource="{Binding Favorites}" SelectionMode="None">
+                    <CollectionView.EmptyView>
+                        <VerticalStackLayout Spacing="6" HorizontalOptions="Center" VerticalOptions="Center" Margin="0,48">
+                            <Label Text="☆" FontSize="36" HorizontalOptions="Center" Style="{StaticResource Muted}" />
+                            <Label Text="Nenhum favorito ainda" Style="{StaticResource SectionTitle}" HorizontalOptions="Center" />
+                            <Label Text="Abra uma ação no Dashboard e toque em Favoritar." Style="{StaticResource Muted}"
+                                   HorizontalOptions="Center" />
+                        </VerticalStackLayout>
+                    </CollectionView.EmptyView>
+
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate x:DataType="models:FavoriteStock">
+                            <Grid ColumnDefinitions="Auto,*,Auto,Auto" ColumnSpacing="12" Padding="10,10">
+                                <VisualStateManager.VisualStateGroups>
+                                    <VisualStateGroupList>
+                                        <VisualStateGroup x:Name="CommonStates">
+                                            <VisualState x:Name="Normal" />
+                                            <VisualState x:Name="PointerOver">
+                                                <VisualState.Setters>
+                                                    <Setter Property="BackgroundColor"
+                                                            Value="{AppThemeBinding Light={StaticResource SurfaceAltLight}, Dark={StaticResource SurfaceAltDark}}" />
+                                                </VisualState.Setters>
+                                            </VisualState>
+                                        </VisualStateGroup>
+                                    </VisualStateGroupList>
+                                </VisualStateManager.VisualStateGroups>
+
+                                <Grid.GestureRecognizers>
+                                    <TapGestureRecognizer CommandParameter="{Binding .}"
+                                        Command="{Binding OpenCommand, Source={RelativeSource AncestorType={x:Type vm:FavoritesViewModel}}, x:DataType=vm:FavoritesViewModel}" />
+                                </Grid.GestureRecognizers>
+
+                                <Border Style="{StaticResource Avatar}" VerticalOptions="Center">
+                                    <Label Text="{Binding Initials}" Style="{StaticResource AvatarText}" />
+                                </Border>
+
+                                <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="1">
+                                    <Label Text="{Binding Symbol}" FontSize="15" FontAttributes="Bold" />
+                                    <Label Text="{Binding Name}" Style="{StaticResource Caption}"
+                                           LineBreakMode="TailTruncation" MaxLines="1" />
+                                    <Label Text="{Binding UpdatedText}" Style="{StaticResource Caption}" FontSize="11" />
+                                </VerticalStackLayout>
+
+                                <VerticalStackLayout Grid.Column="2" VerticalOptions="Center" Spacing="4">
+                                    <Label Text="{Binding PriceText}" FontAttributes="Bold" HorizontalOptions="End" />
+                                    <Border Style="{StaticResource ChangePill}">
+                                        <Border.Triggers>
+                                            <DataTrigger TargetType="Border" Binding="{Binding IsPositive}" Value="False">
+                                                <Setter Property="BackgroundColor"
+                                                        Value="{AppThemeBinding Light={StaticResource LossSoftLight}, Dark={StaticResource LossSoftDark}}" />
+                                            </DataTrigger>
+                                        </Border.Triggers>
+                                        <Label Text="{Binding ChangeText}" Style="{StaticResource ChangePillText}">
+                                            <Label.Triggers>
+                                                <DataTrigger TargetType="Label" Binding="{Binding IsPositive}" Value="False">
+                                                    <Setter Property="TextColor"
+                                                            Value="{AppThemeBinding Light={StaticResource LossLight}, Dark={StaticResource LossDark}}" />
+                                                </DataTrigger>
+                                            </Label.Triggers>
+                                        </Label>
+                                    </Border>
+                                </VerticalStackLayout>
+
+                                <Button Grid.Column="3" Text="Remover" Style="{StaticResource GhostButton}"
+                                        VerticalOptions="Center"
+                                        CommandParameter="{Binding .}"
+                                        Command="{Binding RemoveCommand, Source={RelativeSource AncestorType={x:Type vm:FavoritesViewModel}}, x:DataType=vm:FavoritesViewModel}" />
+                            </Grid>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+
+                <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}"
+                                   HorizontalOptions="Center" VerticalOptions="Center" />
+            </Grid>
+        </Border>
+    </Grid>
+</ContentPage>

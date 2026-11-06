@@ -1,0 +1,10 @@
+# Segredos locais — NUNCA versionar
+.env
+
+# Build / IDE
+bin/
+obj/
+.vs/
+*.user
+*.suo
+*.db3

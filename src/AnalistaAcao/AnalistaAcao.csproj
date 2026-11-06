@@ -1,0 +1,62 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>net10.0-android;net10.0-ios;net10.0-maccatalyst</TargetFrameworks>
+    <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">$(TargetFrameworks);net10.0-windows10.0.19041.0</TargetFrameworks>
+
+    <OutputType>Exe</OutputType>
+    <RootNamespace>AnalistaAcao</RootNamespace>
+    <UseMaui>true</UseMaui>
+    <SingleProject>true</SingleProject>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+
+    <!-- Identidade do app -->
+    <ApplicationTitle>Analista Ação</ApplicationTitle>
+    <ApplicationId>com.analistaacao.app</ApplicationId>
+    <ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
+    <ApplicationVersion>1</ApplicationVersion>
+
+    <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">15.0</SupportedOSPlatformVersion>
+    <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'">15.0</SupportedOSPlatformVersion>
+    <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">21.0</SupportedOSPlatformVersion>
+    <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</SupportedOSPlatformVersion>
+    <TargetPlatformMinVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</TargetPlatformMinVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Ícone e splash (SVG, gerados para todas as plataformas pelo MAUI) -->
+    <MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" Color="#064E3B" />
+    <MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#064E3B" BaseSize="128,128" />
+
+    <!--
+      Arquivo .env de DESENVOLVIMENTO (raiz do repositório). Só é empacotado se existir.
+      Ele é ignorado pelo Git (.gitignore). Para distribuição, prefira salvar a chave
+      pela tela Configurações (SecureStorage).
+    -->
+    <MauiAsset Include="..\..\.env" Condition="Exists('..\..\.env')" LogicalName="brapi.env" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiVersion)" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="10.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Http" Version="10.0.0" />
+
+    <!-- MVVM -->
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
+
+    <!--
+      SQLite local. A partir da 1.11 o sqlite-net-pcl já traz o SQLite nativo atualizado
+      (SQLitePCLRaw 3.x + SourceGear.sqlite3), então o antigo SQLitePCLRaw.bundle_green
+      (2.1.x, vulnerável — GHSA-2m69-gcr7-jv3q) não é mais necessário.
+    -->
+    <PackageReference Include="sqlite-net-pcl" Version="1.11.285" />
+
+    <!-- Gráficos -->
+    <PackageReference Include="LiveChartsCore.SkiaSharpView.Maui" Version="2.0.0-rc5.4" />
+
+    <!-- Leitura de .env -->
+    <PackageReference Include="DotNetEnv" Version="3.1.1" />
+  </ItemGroup>
+
+</Project>

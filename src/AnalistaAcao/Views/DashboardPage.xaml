@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!--
+  Dashboard: maiores altas e baixas + filtro de tempo global.
+  Layout responsivo: 2 colunas no Desktop, empilhado no celular.
+-->
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:AnalistaAcao.ViewModels"
+             xmlns:models="clr-namespace:AnalistaAcao.Models"
+             xmlns:controls="clr-namespace:AnalistaAcao.Controls"
+             x:Class="AnalistaAcao.Views.DashboardPage"
+             x:DataType="vm:DashboardViewModel"
+             Title="{Binding Title}">
+
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Text="Atualizar" Command="{Binding RefreshCommand}" />
+    </ContentPage.ToolbarItems>
+
+    <ContentPage.Resources>
+        <!-- Linha de ação reutilizada nas duas listas -->
+        <DataTemplate x:Key="StockRowTemplate" x:DataType="models:StockSummary">
+            <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12" Padding="10,10">
+                <VisualStateManager.VisualStateGroups>
+                    <VisualStateGroupList>
+                        <VisualStateGroup x:Name="CommonStates">
+                            <VisualState x:Name="Normal" />
+                            <VisualState x:Name="PointerOver">
+                                <VisualState.Setters>
+                                    <Setter Property="BackgroundColor"
+                                            Value="{AppThemeBinding Light={StaticResource SurfaceAltLight}, Dark={StaticResource SurfaceAltDark}}" />
+                                </VisualState.Setters>
+                            </VisualState>
+                        </VisualStateGroup>
+                    </VisualStateGroupList>
+                </VisualStateManager.VisualStateGroups>
+
+                <Grid.GestureRecognizers>
+                    <TapGestureRecognizer
+                        CommandParameter="{Binding .}"
+                        Command="{Binding OpenStockCommand, Source={RelativeSource AncestorType={x:Type vm:DashboardViewModel}}, x:DataType=vm:DashboardViewModel}" />
+                </Grid.GestureRecognizers>
+
+                <!-- Avatar -->
+                <Border Style="{StaticResource Avatar}" VerticalOptions="Center">
+                    <Label Text="{Binding Initials}" Style="{StaticResource AvatarText}" />
+                </Border>
+
+                <!-- Ticker + nome -->
+                <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="1">
+                    <Label Text="{Binding Symbol}" FontSize="15" FontAttributes="Bold" />
+                    <Label Text="{Binding Name}" Style="{StaticResource Caption}"
+                           LineBreakMode="TailTruncation" MaxLines="1" />
+                </VerticalStackLayout>
+
+                <!-- Preço + pílula de variação -->
+                <VerticalStackLayout Grid.Column="2" VerticalOptions="Center" Spacing="4">
+                    <Label Text="{Binding PriceText}" FontSize="14" FontAttributes="Bold"
+                           HorizontalOptions="End" />
+                    <Border Style="{StaticResource ChangePill}">
+                        <Border.Triggers>
+                            <DataTrigger TargetType="Border" Binding="{Binding IsPositive}" Value="False">
+                                <Setter Property="BackgroundColor"
+                                        Value="{AppThemeBinding Light={StaticResource LossSoftLight}, Dark={StaticResource LossSoftDark}}" />
+                            </DataTrigger>
+                        </Border.Triggers>
+                        <Label Text="{Binding ChangeText}" Style="{StaticResource ChangePillText}">
+                            <Label.Triggers>
+                                <DataTrigger TargetType="Label" Binding="{Binding IsPositive}" Value="False">
+                                    <Setter Property="TextColor"
+                                            Value="{AppThemeBinding Light={StaticResource LossLight}, Dark={StaticResource LossDark}}" />
+                                </DataTrigger>
+                            </Label.Triggers>
+                        </Label>
+                    </Border>
+                </VerticalStackLayout>
+            </Grid>
+        </DataTemplate>
+    </ContentPage.Resources>
+
+    <Grid RowDefinitions="Auto,Auto,*"
+          RowSpacing="20"
+          Padding="{OnIdiom Desktop='32,28', Default='16,16'}">
+
+        <!-- ================= Cabeçalho + filtro global ================= -->
+        <FlexLayout Grid.Row="0" Wrap="Wrap" JustifyContent="SpaceBetween" AlignItems="Center">
+            <VerticalStackLayout Spacing="4" Margin="0,0,16,8">
+                <Label Text="Visão geral do mercado" Style="{StaticResource PageTitle}" />
+                <Label Text="{Binding LastUpdatedText}" Style="{StaticResource Muted}" />
+            </VerticalStackLayout>
+
+            <controls:TimeRangeSelector ItemsSource="{Binding TimeRanges}"
+                                        Command="{Binding SelectRangeCommand}"
+                                        Margin="0,0,0,8" />
+        </FlexLayout>
+
+        <!-- ================= Banner de erro ================= -->
+        <Border Grid.Row="1" Style="{StaticResource ErrorBanner}" IsVisible="{Binding HasError}">
+            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                <Label Text="{Binding ErrorMessage}" VerticalOptions="Center"
+                       TextColor="{AppThemeBinding Light={StaticResource LossLight}, Dark={StaticResource LossDark}}" />
+                <Button Grid.Column="1" Text="Tentar novamente" Style="{StaticResource GhostButton}"
+                        Command="{Binding RefreshCommand}" />
+            </Grid>
+        </Border>
+
+        <!-- ================= Cards de Altas / Baixas ================= -->
+        <Grid Grid.Row="2"
+              ColumnDefinitions="{OnIdiom Desktop='*,*', Default='*'}"
+              RowDefinitions="{OnIdiom Desktop='*', Default='*,*'}"
+              ColumnSpacing="20" RowSpacing="20">
+
+            <!-- Maiores Altas -->
+            <Border Style="{StaticResource Card}" Padding="12,16">
+                <Grid RowDefinitions="Auto,*" RowSpacing="8">
+                    <HorizontalStackLayout Spacing="10" Padding="10,0">
+                        <BoxView WidthRequest="10" HeightRequest="10" CornerRadius="5" VerticalOptions="Center"
+                                 Color="{AppThemeBinding Light={StaticResource GainLight}, Dark={StaticResource GainDark}}" />
+                        <Label Text="Maiores Altas" Style="{StaticResource SectionTitle}" VerticalOptions="Center" />
+                    </HorizontalStackLayout>
+
+                    <CollectionView Grid.Row="1"
+                                    ItemsSource="{Binding TopGainers}"
+                                    ItemTemplate="{StaticResource StockRowTemplate}"
+                                    SelectionMode="None">
+                        <CollectionView.EmptyView>
+                            <Label Text="Nenhuma alta no período." Style="{StaticResource Muted}"
+                                   HorizontalOptions="Center" Margin="0,32" />
+                        </CollectionView.EmptyView>
+                    </CollectionView>
+                </Grid>
+            </Border>
+
+            <!-- Maiores Baixas -->
+            <Border Style="{StaticResource Card}" Padding="12,16"
+                    Grid.Column="{OnIdiom Desktop=1, Default=0}"
+                    Grid.Row="{OnIdiom Desktop=0, Default=1}">
+                <Grid RowDefinitions="Auto,*" RowSpacing="8">
+                    <HorizontalStackLayout Spacing="10" Padding="10,0">
+                        <BoxView WidthRequest="10" HeightRequest="10" CornerRadius="5" VerticalOptions="Center"
+                                 Color="{AppThemeBinding Light={StaticResource LossLight}, Dark={StaticResource LossDark}}" />
+                        <Label Text="Maiores Baixas" Style="{StaticResource SectionTitle}" VerticalOptions="Center" />
+                    </HorizontalStackLayout>
+
+                    <CollectionView Grid.Row="1"
+                                    ItemsSource="{Binding TopLosers}"
+                                    ItemTemplate="{StaticResource StockRowTemplate}"
+                                    SelectionMode="None">
+                        <CollectionView.EmptyView>
+                            <Label Text="Nenhuma baixa no período." Style="{StaticResource Muted}"
+                                   HorizontalOptions="Center" Margin="0,32" />
+                        </CollectionView.EmptyView>
+                    </CollectionView>
+                </Grid>
+            </Border>
+        </Grid>
+
+        <!-- ================= Indicador de carregamento ================= -->
+        <ActivityIndicator Grid.Row="2" IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}"
+                           HorizontalOptions="Center" VerticalOptions="Center"
+                           WidthRequest="40" HeightRequest="40" />
+    </Grid>
+</ContentPage>

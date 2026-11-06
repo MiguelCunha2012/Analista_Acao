@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:AnalistaAcao.ViewModels"
+             xmlns:controls="clr-namespace:AnalistaAcao.Controls"
+             xmlns:lvc="clr-namespace:LiveChartsCore.SkiaSharpView.Maui;assembly=LiveChartsCore.SkiaSharpView.Maui"
+             x:Class="AnalistaAcao.Views.StockDetailPage"
+             x:DataType="vm:StockDetailViewModel"
+             Title="{Binding Title}">
+
+    <ScrollView>
+        <VerticalStackLayout Spacing="20" Padding="{OnIdiom Desktop='32,28', Default='16,16'}">
+
+            <!-- ================= Cabeçalho do ativo ================= -->
+            <Border Style="{StaticResource Card}">
+                <FlexLayout Wrap="Wrap" JustifyContent="SpaceBetween" AlignItems="Center">
+                    <HorizontalStackLayout Spacing="16" Margin="0,0,16,8">
+                        <Border Style="{StaticResource Avatar}" WidthRequest="56" HeightRequest="56">
+                            <Label Text="{Binding Initials}" Style="{StaticResource AvatarText}" FontSize="18" />
+                        </Border>
+                        <VerticalStackLayout VerticalOptions="Center" Spacing="2">
+                            <Label Text="{Binding Symbol}" Style="{StaticResource PageTitle}" />
+                            <Label Text="{Binding Name}" Style="{StaticResource Muted}" />
+                        </VerticalStackLayout>
+                    </HorizontalStackLayout>
+
+                    <HorizontalStackLayout Spacing="20" Margin="0,0,0,8">
+                        <VerticalStackLayout VerticalOptions="Center" Spacing="4">
+                            <Label Text="{Binding PriceText}" FontSize="28" FontAttributes="Bold" HorizontalOptions="End" />
+                            <Border Style="{StaticResource ChangePill}">
+                                <Border.Triggers>
+                                    <DataTrigger TargetType="Border" Binding="{Binding IsPositive}" Value="False">
+                                        <Setter Property="BackgroundColor"
+                                                Value="{AppThemeBinding Light={StaticResource LossSoftLight}, Dark={StaticResource LossSoftDark}}" />
+                                    </DataTrigger>
+                                </Border.Triggers>
+                                <Label Text="{Binding ChangeText, StringFormat='{0} hoje'}" Style="{StaticResource ChangePillText}">
+                                    <Label.Triggers>
+                                        <DataTrigger TargetType="Label" Binding="{Binding IsPositive}" Value="False">
+                                            <Setter Property="TextColor"
+                                                    Value="{AppThemeBinding Light={StaticResource LossLight}, Dark={StaticResource LossDark}}" />
+                                        </DataTrigger>
+                                    </Label.Triggers>
+                                </Label>
+                            </Border>
+                        </VerticalStackLayout>
+
+                        <!-- Favoritar / Desfavoritar -->
+                        <Button Text="{Binding FavoriteButtonText}"
+                                Command="{Binding ToggleFavoriteCommand}"
+                                VerticalOptions="Center">
+                            <Button.Triggers>
+                                <DataTrigger TargetType="Button" Binding="{Binding IsFavorite}" Value="True">
+                                    <Setter Property="BackgroundColor" Value="Transparent" />
+                                    <Setter Property="BorderColor" Value="{StaticResource BrandAccent}" />
+                                    <Setter Property="BorderWidth" Value="1.5" />
+                                    <Setter Property="TextColor"
+                                            Value="{AppThemeBinding Light={StaticResource Brand}, Dark={StaticResource BrandAccent}}" />
+                                </DataTrigger>
+                            </Button.Triggers>
+                        </Button>
+                    </HorizontalStackLayout>
+                </FlexLayout>
+            </Border>
+
+            <!-- ================= Erro ================= -->
+            <Border Style="{StaticResource ErrorBanner}" IsVisible="{Binding HasError}">
+                <Label Text="{Binding ErrorMessage}"
+                       TextColor="{AppThemeBinding Light={StaticResource LossLight}, Dark={StaticResource LossDark}}" />
+            </Border>
+
+            <!-- ================= Gráfico com filtro local ================= -->
+            <Border Style="{StaticResource Card}">
+                <Grid RowDefinitions="Auto,Auto" RowSpacing="16">
+                    <FlexLayout Wrap="Wrap" JustifyContent="SpaceBetween" AlignItems="Center">
+                        <VerticalStackLayout Spacing="2" Margin="0,0,16,8">
+                            <Label Text="Evolução do preço" Style="{StaticResource SectionTitle}" />
+                            <Label Text="{Binding PeriodChangeText}" FontAttributes="Bold" FontSize="13"
+                                   TextColor="{AppThemeBinding Light={StaticResource GainLight}, Dark={StaticResource GainDark}}">
+                                <Label.Triggers>
+                                    <DataTrigger TargetType="Label" Binding="{Binding IsPeriodPositive}" Value="False">
+                                        <Setter Property="TextColor"
+                                                Value="{AppThemeBinding Light={StaticResource LossLight}, Dark={StaticResource LossDark}}" />
+                                    </DataTrigger>
+                                </Label.Triggers>
+                            </Label>
+                        </VerticalStackLayout>
+
+                        <controls:TimeRangeSelector ItemsSource="{Binding TimeRanges}"
+                                                    Command="{Binding SelectRangeCommand}"
+                                                    Margin="0,0,0,8" />
+                    </FlexLayout>
+
+                    <Grid Grid.Row="1" HeightRequest="{OnIdiom Desktop=380, Default=280}">
+                        <lvc:CartesianChart Series="{Binding Series}"
+                                            XAxes="{Binding XAxes}"
+                                            YAxes="{Binding YAxes}"
+                                            TooltipPosition="Top"
+                                            ZoomMode="X" />
+                        <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}"
+                                           HorizontalOptions="Center" VerticalOptions="Center" />
+                    </Grid>
+                </Grid>
+            </Border>
+
+            <!-- ================= Indicadores ================= -->
+            <Grid ColumnDefinitions="{OnIdiom Desktop='*,*,*,*', Default='*,*'}"
+                  RowDefinitions="{OnIdiom Desktop='Auto', Default='Auto,Auto'}"
+                  ColumnSpacing="16" RowSpacing="16">
+
+                <Border Style="{StaticResource Card}" Padding="16">
+                    <VerticalStackLayout Spacing="6">
+                        <Label Text="Mín – Máx do dia" Style="{StaticResource Caption}" />
+                        <Label Text="{Binding DayRangeText}" FontAttributes="Bold" />
+                    </VerticalStackLayout>
+                </Border>
+
+                <Border Style="{StaticResource Card}" Padding="16" Grid.Column="1">
+                    <VerticalStackLayout Spacing="6">
+                        <Label Text="Faixa 52 semanas" Style="{StaticResource Caption}" />
+                        <Label Text="{Binding Week52RangeText}" FontAttributes="Bold" />
+                    </VerticalStackLayout>
+                </Border>
+
+                <Border Style="{StaticResource Card}" Padding="16"
+                        Grid.Column="{OnIdiom Desktop=2, Default=0}" Grid.Row="{OnIdiom Desktop=0, Default=1}">
+                    <VerticalStackLayout Spacing="6">
+                        <Label Text="Volume" Style="{StaticResource Caption}" />
+                        <Label Text="{Binding VolumeText}" FontAttributes="Bold" />
+                    </VerticalStackLayout>
+                </Border>
+
+                <Border Style="{StaticResource Card}" Padding="16"
+                        Grid.Column="{OnIdiom Desktop=3, Default=1}" Grid.Row="{OnIdiom Desktop=0, Default=1}">
+                    <VerticalStackLayout Spacing="6">
+                        <Label Text="Valor de mercado" Style="{StaticResource Caption}" />
+                        <Label Text="{Binding MarketCapText}" FontAttributes="Bold" />
+                    </VerticalStackLayout>
+                </Border>
+            </Grid>
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>
