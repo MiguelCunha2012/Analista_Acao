@@ -1,79 +1,154 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!--
-  Navegação principal.
-  • Desktop: menu lateral FIXO (FlyoutBehavior=Locked) em verde escuro.
-  • Mobile: o mesmo menu vira um flyout "hambúrguer".
-  A barra superior (navbar) também usa o verde da marca nos dois temas.
+  Moldura do app.
+  • Desktop: menu lateral FIXO (Locked) com gradiente verde, ícones e indicador de seleção.
+  • Mobile: o mesmo menu vira flyout "hambúrguer".
+  • Barra superior: cada página define um <controls:NavBar> em Shell.TitleView.
 -->
 <Shell x:Class="AnalistaAcao.AppShell"
        xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
        xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
        xmlns:views="clr-namespace:AnalistaAcao.Views"
+       xmlns:vm="clr-namespace:AnalistaAcao.ViewModels"
+       x:DataType="vm:ShellViewModel"
        Title="Analista Ação"
        FlyoutBehavior="{OnIdiom Desktop=Locked, Default=Flyout}"
-       FlyoutWidth="240"
-       FlyoutBackgroundColor="{AppThemeBinding Light={StaticResource Brand}, Dark={StaticResource BrandDeep}}"
+       FlyoutWidth="264"
        Shell.BackgroundColor="{AppThemeBinding Light={StaticResource Brand}, Dark={StaticResource BrandDark}}"
        Shell.ForegroundColor="{StaticResource OnBrand}"
        Shell.TitleColor="{StaticResource OnBrand}"
-       Shell.UnselectedColor="{StaticResource OnBrandMuted}"
+       Shell.UnselectedColor="{StaticResource NavMuted}"
        Shell.NavBarHasShadow="False">
 
-    <!-- Cabeçalho do menu lateral -->
+    <!-- ===================== Fundo do menu: gradiente vertical ===================== -->
+    <Shell.FlyoutBackground>
+        <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+            <GradientStop Offset="0" Color="{AppThemeBinding Light={StaticResource BrandMid}, Dark={StaticResource BrandDark}}" />
+            <GradientStop Offset="1" Color="{AppThemeBinding Light={StaticResource BrandDeep}, Dark=#01160F}" />
+        </LinearGradientBrush>
+    </Shell.FlyoutBackground>
+
+    <!-- ===================== Cabeçalho: marca + status do pregão ===================== -->
     <Shell.FlyoutHeader>
-        <Grid Padding="24,28,24,20" ColumnDefinitions="Auto,*" ColumnSpacing="12">
-            <Border WidthRequest="36" HeightRequest="36" StrokeThickness="0"
-                    StrokeShape="RoundRectangle 10" BackgroundColor="{StaticResource BrandAccent}">
-                <Label Text="↗" FontSize="20" FontAttributes="Bold" TextColor="{StaticResource BrandDeep}"
-                       HorizontalOptions="Center" VerticalOptions="Center" />
+        <VerticalStackLayout Padding="20,28,20,8" Spacing="22">
+
+            <!-- Marca -->
+            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
+                <Border WidthRequest="42" HeightRequest="42" StrokeThickness="0" StrokeShape="RoundRectangle 12">
+                    <Border.Background>
+                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                            <GradientStop Offset="0" Color="#6EE7B7" />
+                            <GradientStop Offset="1" Color="#10B981" />
+                        </LinearGradientBrush>
+                    </Border.Background>
+                    <Label Text="↗" FontSize="22" FontAttributes="Bold" TextColor="{StaticResource BrandDeep}"
+                           HorizontalOptions="Center" VerticalOptions="Center" />
+                </Border>
+                <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="1">
+                    <Label Text="Analista Ação" FontSize="18" FontAttributes="Bold" TextColor="{StaticResource OnBrand}" />
+                    <Label Text="Mercado B3 em tempo real" FontSize="11" TextColor="{StaticResource NavMuted}" />
+                </VerticalStackLayout>
+            </Grid>
+
+            <!-- Cartão de status do pregão -->
+            <Border BackgroundColor="{StaticResource NavGlass}" StrokeThickness="1" Stroke="{StaticResource NavDivider}"
+                    StrokeShape="RoundRectangle 14" Padding="14,12">
+                <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10">
+                    <!-- "Pulso" do status: anel translúcido + ponto sólido -->
+                    <Grid WidthRequest="18" HeightRequest="18" VerticalOptions="Center">
+                        <Ellipse Fill="{Binding MarketStatusBrush}" Opacity="0.25" />
+                        <Ellipse Fill="{Binding MarketStatusBrush}" WidthRequest="8" HeightRequest="8"
+                                 HorizontalOptions="Center" VerticalOptions="Center" />
+                    </Grid>
+                    <VerticalStackLayout Grid.Column="1" Spacing="1" VerticalOptions="Center">
+                        <Label Text="{Binding MarketStatusText}" FontSize="13" FontAttributes="Bold"
+                               TextColor="{StaticResource OnBrand}" />
+                        <Label Text="{Binding MarketStatusDetail}" FontSize="11" TextColor="{StaticResource NavMuted}" />
+                    </VerticalStackLayout>
+                    <VerticalStackLayout Grid.Column="2" Spacing="0" VerticalOptions="Center">
+                        <Label Text="{Binding ClockText}" FontSize="15" FontAttributes="Bold"
+                               TextColor="{StaticResource OnBrand}" HorizontalOptions="End" />
+                        <Label Text="BRT" FontSize="9" CharacterSpacing="1" TextColor="{StaticResource NavMuted}"
+                               HorizontalOptions="End" />
+                    </VerticalStackLayout>
+                </Grid>
             </Border>
-            <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="0">
-                <Label Text="Analista Ação" FontSize="17" FontAttributes="Bold" TextColor="{StaticResource OnBrand}" />
-                <Label Text="Mercado B3 · brapi.dev" FontSize="11" TextColor="{StaticResource OnBrandMuted}" />
-            </VerticalStackLayout>
-        </Grid>
+
+            <Label Text="NAVEGAÇÃO" FontSize="10" FontAttributes="Bold" CharacterSpacing="1.6"
+                   TextColor="{StaticResource NavMuted}" Margin="6,4,0,0" />
+        </VerticalStackLayout>
     </Shell.FlyoutHeader>
 
-    <!-- Aparência dos itens do menu (com estado Selecionado) -->
+    <!-- ===================== Itens do menu ===================== -->
     <Shell.ItemTemplate>
         <DataTemplate x:DataType="BaseShellItem">
-            <Grid Padding="16,0" HeightRequest="46" Margin="12,2">
+            <Grid ColumnDefinitions="4,Auto,*" ColumnSpacing="12" HeightRequest="46" Margin="12,3" Padding="0,0,12,0">
                 <VisualStateManager.VisualStateGroups>
                     <VisualStateGroupList>
                         <VisualStateGroup x:Name="CommonStates">
-                            <VisualState x:Name="Normal">
-                                <VisualState.Setters>
-                                    <Setter Property="BackgroundColor" Value="Transparent" />
-                                </VisualState.Setters>
-                            </VisualState>
+                            <VisualState x:Name="Normal" />
                             <VisualState x:Name="Selected">
                                 <VisualState.Setters>
-                                    <Setter Property="BackgroundColor" Value="{StaticResource BrandSelected}" />
+                                    <Setter TargetName="Highlight" Property="Border.BackgroundColor" Value="{StaticResource NavSelected}" />
+                                    <Setter TargetName="Indicator" Property="BoxView.IsVisible" Value="True" />
+                                    <Setter TargetName="ItemIcon" Property="Image.Opacity" Value="1" />
+                                    <Setter TargetName="ItemLabel" Property="Label.TextColor" Value="{StaticResource OnBrand}" />
                                 </VisualState.Setters>
                             </VisualState>
                         </VisualStateGroup>
                     </VisualStateGroupList>
                 </VisualStateManager.VisualStateGroups>
-                <Label Text="{Binding Title}" FontSize="14" FontAttributes="Bold"
-                       TextColor="{StaticResource OnBrand}" VerticalOptions="Center" />
+
+                <!-- Fundo do item (aparece quando selecionado) -->
+                <Border x:Name="Highlight" Grid.ColumnSpan="3" StrokeThickness="0"
+                        StrokeShape="RoundRectangle 12" BackgroundColor="Transparent" />
+
+                <!-- Barra de destaque à esquerda -->
+                <BoxView x:Name="Indicator" Color="{StaticResource BrandAccent}" CornerRadius="2"
+                         WidthRequest="4" HeightRequest="22" VerticalOptions="Center" IsVisible="False" />
+
+                <Image x:Name="ItemIcon" Grid.Column="1" Source="{Binding FlyoutIcon}"
+                       WidthRequest="20" HeightRequest="20" Opacity="0.65" VerticalOptions="Center" />
+
+                <Label x:Name="ItemLabel" Grid.Column="2" Text="{Binding Title}" FontSize="14" FontAttributes="Bold"
+                       TextColor="{StaticResource NavMuted}" VerticalOptions="Center" />
             </Grid>
         </DataTemplate>
     </Shell.ItemTemplate>
 
+    <!-- ===================== Rodapé: tema + créditos ===================== -->
     <Shell.FlyoutFooter>
-        <Label Text="Dados com atraso · uso informativo" FontSize="11" Padding="24,16"
-               TextColor="{StaticResource OnBrandMuted}" />
+        <VerticalStackLayout Padding="20,12,20,20" Spacing="14">
+            <BoxView HeightRequest="1" Color="{StaticResource NavDivider}" />
+
+            <Border BackgroundColor="{StaticResource NavGlass}" StrokeThickness="0"
+                    StrokeShape="RoundRectangle 12" Padding="12,6">
+                <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10">
+                    <Image Source="{Binding ThemeIcon}" WidthRequest="18" HeightRequest="18" VerticalOptions="Center" />
+                    <Label Grid.Column="1" Text="{Binding ThemeLabel}" FontSize="13" FontAttributes="Bold"
+                           TextColor="{StaticResource OnBrand}" VerticalOptions="Center" />
+                    <Switch Grid.Column="2" IsToggled="{Binding IsDarkMode}" VerticalOptions="Center"
+                            OnColor="{StaticResource BrandAccent}" ThumbColor="{StaticResource OnBrand}" />
+                </Grid>
+            </Border>
+
+            <VerticalStackLayout Spacing="2">
+                <Label Text="{Binding DateText}" FontSize="12" FontAttributes="Bold" TextColor="{StaticResource OnBrand}" />
+                <Label Text="v1.0 · dados via brapi.dev · uso informativo" FontSize="10" TextColor="{StaticResource NavMuted}" />
+            </VerticalStackLayout>
+        </VerticalStackLayout>
     </Shell.FlyoutFooter>
 
-    <FlyoutItem Title="Dashboard" Route="dashboard">
+    <!-- ===================== Páginas ===================== -->
+    <FlyoutItem Title="Dashboard" Icon="nav_dashboard.png" Route="dashboard">
         <ShellContent ContentTemplate="{DataTemplate views:DashboardPage}" />
     </FlyoutItem>
 
-    <FlyoutItem Title="Meus Favoritos" Route="favorites">
+    <FlyoutItem Title="Meus Favoritos" Icon="nav_favorites.png" Route="favorites">
         <ShellContent ContentTemplate="{DataTemplate views:FavoritesPage}" />
     </FlyoutItem>
 
-    <FlyoutItem Title="Configurações" Route="settings">
+    <FlyoutItem Title="Configurações" Icon="nav_settings.png" Route="settings">
         <ShellContent ContentTemplate="{DataTemplate views:SettingsPage}" />
     </FlyoutItem>
 

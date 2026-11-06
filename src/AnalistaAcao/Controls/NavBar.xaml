@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!--
+  Barra superior (Shell.TitleView) reutilizada por todas as páginas:
+    [ Seção › Título ]                  [ 🔍 Buscar ticker ]  [ ● Pregão aberto · 14:32 ]
+  • Title/Subtitle vêm da página (bindable properties).
+  • Busca, status e relógio vêm do ShellViewModel (singleton, compartilhado com o menu).
+  • No celular, só o título aparece (busca e status ficam ocultos).
+-->
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:controls="clr-namespace:AnalistaAcao.Controls"
+             xmlns:vm="clr-namespace:AnalistaAcao.ViewModels"
+             x:Class="AnalistaAcao.Controls.NavBar"
+             x:DataType="controls:NavBar"
+             x:Name="Root">
+
+    <Grid x:Name="Bar"
+          x:DataType="vm:ShellViewModel"
+          ColumnDefinitions="*,Auto,Auto"
+          ColumnSpacing="12"
+          Padding="{OnIdiom Desktop='12,0,16,0', Default='0,0,8,0'}"
+          VerticalOptions="Center">
+
+        <!-- ============ Título com "breadcrumb" ============ -->
+        <VerticalStackLayout Spacing="0" VerticalOptions="Center">
+            <Label FontSize="10" FontAttributes="Bold" CharacterSpacing="1.4"
+                   TextColor="{StaticResource NavMuted}"
+                   Text="{Binding Subtitle, Source={x:Reference Root}, x:DataType=controls:NavBar}"
+                   IsVisible="{OnIdiom Desktop=True, Default=False}" />
+            <Label FontSize="17" FontAttributes="Bold" TextColor="{StaticResource OnBrand}"
+                   LineBreakMode="TailTruncation" MaxLines="1"
+                   Text="{Binding Title, Source={x:Reference Root}, x:DataType=controls:NavBar}" />
+        </VerticalStackLayout>
+
+        <!-- ============ Busca rápida de ticker ============ -->
+        <Border Grid.Column="1"
+                IsVisible="{OnIdiom Desktop=True, Default=False}"
+                BackgroundColor="{StaticResource NavGlass}"
+                Stroke="{StaticResource NavDivider}" StrokeThickness="1"
+                StrokeShape="RoundRectangle 10"
+                WidthRequest="260" HeightRequest="36"
+                Padding="10,0" VerticalOptions="Center">
+            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
+                <Image Source="ic_search.png" WidthRequest="16" HeightRequest="16" VerticalOptions="Center" />
+                <Entry Grid.Column="1"
+                       Text="{Binding SearchText}"
+                       Placeholder="Buscar ticker (ex.: PETR4)"
+                       PlaceholderColor="{StaticResource NavMuted}"
+                       TextColor="{StaticResource OnBrand}"
+                       BackgroundColor="Transparent"
+                       FontSize="13"
+                       TextTransform="Uppercase"
+                       ReturnType="Search"
+                       ReturnCommand="{Binding SearchCommand}"
+                       VerticalOptions="Center" />
+            </Grid>
+        </Border>
+
+        <!-- ============ Status do pregão + relógio ============ -->
+        <Border Grid.Column="2"
+                IsVisible="{OnIdiom Desktop=True, Default=False}"
+                BackgroundColor="{StaticResource NavGlass}"
+                StrokeThickness="0"
+                StrokeShape="RoundRectangle 18"
+                HeightRequest="36" Padding="12,0" VerticalOptions="Center">
+            <HorizontalStackLayout Spacing="8">
+                <Grid WidthRequest="14" HeightRequest="14" VerticalOptions="Center">
+                    <Ellipse Fill="{Binding MarketStatusBrush}" Opacity="0.3" />
+                    <Ellipse Fill="{Binding MarketStatusBrush}" WidthRequest="6" HeightRequest="6"
+                             HorizontalOptions="Center" VerticalOptions="Center" />
+                </Grid>
+                <Label Text="{Binding MarketStatusText}" FontSize="12" FontAttributes="Bold"
+                       TextColor="{StaticResource OnBrand}" VerticalOptions="Center" />
+                <BoxView WidthRequest="1" HeightRequest="14" Color="{StaticResource NavDivider}" VerticalOptions="Center" />
+                <Label Text="{Binding ClockText}" FontSize="12" FontAttributes="Bold"
+                       TextColor="{StaticResource NavMuted}" VerticalOptions="Center" />
+            </HorizontalStackLayout>
+        </Border>
+    </Grid>
+</ContentView>

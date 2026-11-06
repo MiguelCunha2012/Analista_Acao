@@ -29,6 +29,9 @@
     <MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" Color="#064E3B" />
     <MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#064E3B" BaseSize="128,128" />
 
+    <!-- Ícones de navegação (SVG → PNG em todas as plataformas). Use "nome.png" no XAML. -->
+    <MauiImage Include="Resources\Images\*.svg" BaseSize="24,24" />
+
     <!--
       Arquivo .env de DESENVOLVIMENTO (raiz do repositório). Só é empacotado se existir.
       Ele é ignorado pelo Git (.gitignore). Para distribuição, prefira salvar a chave

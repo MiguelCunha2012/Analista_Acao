@@ -1,12 +1,16 @@
 using AnalistaAcao.Services;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace AnalistaAcao;
 
 public partial class App : Application
 {
-    public App(IThemeService themeService)
+    private readonly IServiceProvider _services;
+
+    public App(IThemeService themeService, IServiceProvider services)
     {
         InitializeComponent();
+        _services = services;
 
         // Restaura a preferência de tema (Sistema/Claro/Escuro) salva pelo usuário.
         UserAppTheme = themeService.SavedTheme;
@@ -14,7 +18,8 @@ public partial class App : Application
 
     protected override Window CreateWindow(IActivationState? activationState)
     {
-        var window = new Window(new AppShell()) { Title = "Analista Ação" };
+        // AppShell vem do DI para receber o ShellViewModel.
+        var window = new Window(_services.GetRequiredService<AppShell>()) { Title = "Analista Ação" };
 
         // Tamanho confortável para Desktop (foco principal do app).
         if (DeviceInfo.Idiom == DeviceIdiom.Desktop)

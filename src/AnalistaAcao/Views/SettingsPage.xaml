@@ -2,9 +2,14 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:vm="clr-namespace:AnalistaAcao.ViewModels"
+             xmlns:controls="clr-namespace:AnalistaAcao.Controls"
              x:Class="AnalistaAcao.Views.SettingsPage"
              x:DataType="vm:SettingsViewModel"
              Title="{Binding Title}">
+
+    <Shell.TitleView>
+        <controls:NavBar Title="Configurações" Subtitle="ANALISTA AÇÃO  ›  PREFERÊNCIAS" />
+    </Shell.TitleView>
 
     <ScrollView>
         <VerticalStackLayout Spacing="20" Padding="{OnIdiom Desktop='32,28', Default='16,16'}" MaximumWidthRequest="760"

@@ -40,6 +40,9 @@ public partial class SettingsViewModel : BaseViewModel
 
     public async Task InitializeAsync()
     {
+        // O tema pode ter sido trocado pelo Switch do menu lateral.
+        SelectedThemeIndex = (int)_themeService.SavedTheme;
+
         var result = await _apiKeyProvider.ResolveAsync();
         KeyStatus = result.Source switch
         {

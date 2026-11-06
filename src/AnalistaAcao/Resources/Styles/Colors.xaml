@@ -15,6 +15,13 @@
     <Color x:Key="OnBrand">#FFFFFF</Color>
     <Color x:Key="OnBrandMuted">#A7F3D0</Color>
     <Color x:Key="BrandSelected">#0B6B52</Color>
+    <Color x:Key="BrandMid">#065F46</Color>
+
+    <!-- Camadas translúcidas sobre o verde (formato #AARRGGBB) -->
+    <Color x:Key="NavGlass">#1AFFFFFF</Color>        <!-- cartões/inputs na navbar e no menu -->
+    <Color x:Key="NavSelected">#26FFFFFF</Color>     <!-- item de menu selecionado -->
+    <Color x:Key="NavDivider">#1FFFFFFF</Color>      <!-- linhas divisórias -->
+    <Color x:Key="NavMuted">#8FD9BE</Color>          <!-- texto secundário sobre o verde -->
 
     <!-- Alta / Baixa: vibrantes, com variação para contraste em cada tema -->
     <Color x:Key="GainLight">#16A34A</Color>

@@ -8,6 +8,10 @@
              x:DataType="vm:StockDetailViewModel"
              Title="{Binding Title}">
 
+    <Shell.TitleView>
+        <controls:NavBar Title="{Binding Symbol}" Subtitle="MERCADO  ›  DETALHES DO ATIVO" />
+    </Shell.TitleView>
+
     <ScrollView>
         <VerticalStackLayout Spacing="20" Padding="{OnIdiom Desktop='32,28', Default='16,16'}">
 

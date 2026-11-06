@@ -45,6 +45,10 @@ public static class MauiProgram
         services.AddSingleton<IBrapiApiService>(sp =>
             new BrapiApiService(sp.GetRequiredService<IHttpClientFactory>().CreateClient(BrapiClientName)));
 
+        // ---------------- Moldura (menu lateral + barra superior) ----------------
+        services.AddSingleton<ShellViewModel>();
+        services.AddSingleton<AppShell>();
+
         // ---------------- ViewModels & Views ----------------
         // Telas do menu: singleton (mantêm estado ao alternar entre abas).
         services.AddSingleton<DashboardViewModel>();

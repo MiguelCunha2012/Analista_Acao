@@ -12,6 +12,10 @@
              x:DataType="vm:DashboardViewModel"
              Title="{Binding Title}">
 
+    <Shell.TitleView>
+        <controls:NavBar Title="Dashboard" Subtitle="ANALISTA AÇÃO  ›  MERCADO" />
+    </Shell.TitleView>
+
     <ContentPage.ToolbarItems>
         <ToolbarItem Text="Atualizar" Command="{Binding RefreshCommand}" />
     </ContentPage.ToolbarItems>
