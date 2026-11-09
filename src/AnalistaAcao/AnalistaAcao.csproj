@@ -25,12 +25,25 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <!-- Ícone e splash (SVG, gerados para todas as plataformas pelo MAUI) -->
-    <MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" Color="#064E3B" />
-    <MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#064E3B" BaseSize="128,128" />
+    <!--
+      Ícone do app.
+      • Windows: o selo da logo com cantos transparentes (barra de tarefas, Iniciar).
+      • Android/iOS/macOS: o sistema recorta o ícone e exige fundo opaco, então o selo
+        vai sobre um fundo sólido e reduzido para caber na área segura.
+    -->
+    <MauiIcon Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'"
+              Include="Resources\AppIcon\Windows\appicon.png" />
+    <MauiIcon Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) != 'windows'"
+              Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.png"
+              ForegroundScale="0.65" Color="#0D3823" />
+
+    <MauiSplashScreen Include="Resources\Splash\splash.png" Color="#092515" BaseSize="180,180" />
 
     <!-- Ícones de navegação (SVG → PNG em todas as plataformas). Use "nome.png" no XAML. -->
     <MauiImage Include="Resources\Images\*.svg" BaseSize="24,24" />
+
+    <!-- Logo usada dentro do app (menu lateral) -->
+    <MauiImage Include="Resources\Images\app_logo.png" BaseSize="128,128" />
 
     <!--
       Arquivo .env de DESENVOLVIMENTO (raiz do repositório). Só é empacotado se existir.

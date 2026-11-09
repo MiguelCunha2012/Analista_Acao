@@ -34,19 +34,10 @@
 
             <!-- Marca -->
             <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
-                <Border WidthRequest="42" HeightRequest="42" StrokeThickness="0" StrokeShape="RoundRectangle 12">
-                    <Border.Background>
-                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                            <GradientStop Offset="0" Color="#6EE7B7" />
-                            <GradientStop Offset="1" Color="#10B981" />
-                        </LinearGradientBrush>
-                    </Border.Background>
-                    <Label Text="↗" FontSize="22" FontAttributes="Bold" TextColor="{StaticResource BrandDeep}"
-                           HorizontalOptions="Center" VerticalOptions="Center" />
-                </Border>
+                <Image Source="app_logo.png" WidthRequest="48" HeightRequest="48" Aspect="AspectFit" />
                 <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="1">
                     <Label Text="Analista Ação" FontSize="18" FontAttributes="Bold" TextColor="{StaticResource OnBrand}" />
-                    <Label Text="Mercado B3 em tempo real" FontSize="11" TextColor="{StaticResource NavMuted}" />
+                    <Label Text="Mercado B3 · brapi.dev" FontSize="11" TextColor="{StaticResource BrandGold}" />
                 </VerticalStackLayout>
             </Grid>
 
@@ -104,7 +95,7 @@
                         StrokeShape="RoundRectangle 12" BackgroundColor="Transparent" />
 
                 <!-- Barra de destaque à esquerda -->
-                <BoxView x:Name="Indicator" Color="{StaticResource BrandAccent}" CornerRadius="2"
+                <BoxView x:Name="Indicator" Color="{StaticResource BrandGold}" CornerRadius="2"
                          WidthRequest="4" HeightRequest="22" VerticalOptions="Center" IsVisible="False" />
 
                 <Image x:Name="ItemIcon" Grid.Column="1" Source="{Binding FlyoutIcon}"

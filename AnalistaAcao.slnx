@@ -1,3 +1,5 @@
 <Solution>
-  <Project Path="src/AnalistaAcao/AnalistaAcao.csproj" />
+  <Project Path="src/AnalistaAcao/AnalistaAcao.csproj">
+    <Deploy Solution="Debug|*" />
+  </Project>
 </Solution>
