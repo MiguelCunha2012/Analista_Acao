@@ -39,6 +39,10 @@ public sealed class BrapiApiService(HttpClient http) : IBrapiApiService
 
     private readonly ConcurrentDictionary<TimeRange, (DateTimeOffset At, IReadOnlyList<StockSummary> Data)> _rankingCache = new();
 
+    private static readonly TimeSpan CatalogTtl = TimeSpan.FromMinutes(30);
+    private readonly SemaphoreSlim _catalogLock = new(1, 1);
+    private (DateTimeOffset At, IReadOnlyList<StockSummary> Data)? _catalog;
+
     public void InvalidateCache() => _rankingCache.Clear();
 
     // ------------------------------------------------------------------ Dashboard
@@ -137,6 +141,42 @@ public sealed class BrapiApiService(HttpClient http) : IBrapiApiService
                 "Verifique se seu plano da brapi permite esse período.");
 
         return valid;
+    }
+
+    // ------------------------------------------------------------------ Busca
+
+    public async Task<IReadOnlyList<StockSummary>> GetStockCatalogAsync(CancellationToken ct = default)
+    {
+        if (_catalog is { } cached && DateTimeOffset.Now - cached.At < CatalogTtl)
+            return cached.Data;
+
+        // Sem o lock, várias teclas seguidas disparariam várias cargas do catálogo.
+        await _catalogLock.WaitAsync(ct);
+        try
+        {
+            if (_catalog is { } current && DateTimeOffset.Now - current.At < CatalogTtl)
+                return current.Data;
+
+            var response = await GetAsync<BrapiQuoteListResponse>("quote/list?type=stock", ct);
+
+            var data = response.Stocks
+                .Where(s => !string.IsNullOrWhiteSpace(s.Stock) && !s.Stock.EndsWith('F'))
+                .Select(s => new StockSummary(s.Stock, s.Name ?? s.Stock, s.Close ?? 0, s.Change ?? 0, s.Volume ?? 0))
+                .ToList();
+
+            _catalog = (DateTimeOffset.Now, data);
+            return data;
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException && _catalog is not null)
+        {
+            // Catálogo vencido ainda serve para sugerir nomes se a brapi falhar agora.
+            Debug.WriteLine($"[BrapiApiService] Falha ao renovar o catálogo: {ex.Message}");
+            return _catalog.Value.Data;
+        }
+        finally
+        {
+            _catalogLock.Release();
+        }
     }
 
     // ------------------------------------------------------------------ Detalhes

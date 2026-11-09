@@ -1,4 +1,7 @@
+using System.Collections.ObjectModel;
+using System.Diagnostics;
 using AnalistaAcao.Helpers;
+using AnalistaAcao.Models;
 using AnalistaAcao.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -26,15 +29,21 @@ public partial class ShellViewModel : ObservableObject
 
     private static readonly TimeZoneInfo B3TimeZone = ResolveB3TimeZone();
 
+    private const int MaxSuggestions = 7;
+    private const int MinTickerLength = 4;
+    private static readonly TimeSpan CloseDelay = TimeSpan.FromMilliseconds(250);
+
     private readonly IThemeService _themeService;
     private readonly INavigationService _navigation;
+    private readonly IBrapiApiService _api;
     private readonly IDispatcherTimer? _timer;
     private bool _syncingTheme;
 
-    public ShellViewModel(IThemeService themeService, INavigationService navigation)
+    public ShellViewModel(IThemeService themeService, INavigationService navigation, IBrapiApiService api)
     {
         _themeService = themeService;
         _navigation = navigation;
+        _api = api;
 
         _isDarkMode = Application.Current?.RequestedTheme == AppTheme.Dark;
         if (Application.Current is not null)
@@ -120,15 +129,124 @@ public partial class ShellViewModel : ObservableObject
     [NotifyCanExecuteChangedFor(nameof(SearchCommand))]
     private string _searchText = string.Empty;
 
-    private bool CanSearch() => SearchText.Trim().Length >= 4;
+    /// <summary>Sugestões exibidas enquanto o usuário digita.</summary>
+    public ObservableCollection<StockSuggestion> Suggestions { get; } = [];
 
-    /// <summary>Enter na barra superior → abre os detalhes do ticker digitado.</summary>
-    [RelayCommand(CanExecute = nameof(CanSearch))]
-    private async Task SearchAsync()
+    [ObservableProperty] private bool _isSuggestionsOpen;
+    [ObservableProperty] private bool _hasNoMatches;
+
+    partial void OnSearchTextChanged(string value) => _ = UpdateSuggestionsAsync(value);
+
+    private async Task UpdateSuggestionsAsync(string text)
     {
-        var ticker = SearchText.Trim().ToUpperInvariant();
-        SearchText = string.Empty;
-        await _navigation.GoToStockAsync(ticker);
+        var query = text.Trim();
+        if (query.Length == 0)
+        {
+            CloseSuggestions();
+            return;
+        }
+
+        var catalog = await LoadCatalogAsync();
+
+        // O texto pode ter mudado enquanto o catálogo carregava.
+        if (catalog is null || SearchText.Trim() != query)
+            return;
+
+        Suggestions.Clear();
+        foreach (var stock in StockSearch.Filter(catalog, query, MaxSuggestions))
+            Suggestions.Add(new StockSuggestion(stock));
+
+        SetHighlight(Suggestions.Count > 0 ? Suggestions[0] : null);
+        HasNoMatches = Suggestions.Count == 0;
+        IsSuggestionsOpen = true;
+    }
+
+    /// <summary>Sem catálogo não há sugestões, mas digitar o ticker e dar Enter continua funcionando.</summary>
+    private async Task<IReadOnlyList<StockSummary>?> LoadCatalogAsync()
+    {
+        try
+        {
+            return await _api.GetStockCatalogAsync();
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"[ShellViewModel] Catálogo indisponível: {ex.Message}");
+            return null;
+        }
+    }
+
+    /// <summary>Ao focar a busca: já carrega o catálogo e reabre as sugestões do texto atual.</summary>
+    public void OnSearchFocused() => _ = SearchText.Trim().Length > 0
+        ? UpdateSuggestionsAsync(SearchText)
+        : LoadCatalogAsync();
+
+    /// <summary>
+    /// Fecha com atraso: clicar em uma sugestão tira o foco da caixa, e fechar na hora
+    /// removeria a linha antes de o clique ser concluído.
+    /// </summary>
+    public async void OnSearchUnfocused()
+    {
+        await Task.Delay(CloseDelay);
+        CloseSuggestions();
+    }
+
+    public void CloseSuggestions()
+    {
+        IsSuggestionsOpen = false;
+        HasNoMatches = false;
+    }
+
+    /// <summary>Setas ↑/↓: move a linha ativa, voltando ao início ao passar do fim.</summary>
+    public void MoveHighlight(int delta)
+    {
+        if (!IsSuggestionsOpen || Suggestions.Count == 0)
+            return;
+
+        var current = Suggestions.IndexOf(Suggestions.FirstOrDefault(s => s.IsHighlighted)!);
+        var next = (current + delta + Suggestions.Count) % Suggestions.Count;
+        SetHighlight(Suggestions[next]);
+    }
+
+    [RelayCommand]
+    private void HighlightSuggestion(StockSuggestion? suggestion)
+    {
+        if (suggestion is not null)
+            SetHighlight(suggestion);
+    }
+
+    private void SetHighlight(StockSuggestion? target)
+    {
+        foreach (var suggestion in Suggestions)
+            suggestion.IsHighlighted = ReferenceEquals(suggestion, target);
+    }
+
+    [RelayCommand]
+    private Task OpenSuggestionAsync(StockSuggestion? suggestion) =>
+        suggestion is null ? Task.CompletedTask : OpenStockAsync(suggestion.Stock.Symbol);
+
+    private bool CanSearch() => SearchText.Trim().Length > 0;
+
+    /// <summary>
+    /// Enter na busca: abre a sugestão ativa. Sem sugestões (catálogo indisponível),
+    /// trata o texto como ticker, desde que tenha o tamanho mínimo de um.
+    /// </summary>
+    [RelayCommand(CanExecute = nameof(CanSearch))]
+    private Task SearchAsync()
+    {
+        var active = IsSuggestionsOpen ? Suggestions.FirstOrDefault(s => s.IsHighlighted) : null;
+        if (active is not null)
+            return OpenStockAsync(active.Stock.Symbol);
+
+        var typed = SearchText.Trim().ToUpperInvariant();
+        return typed.Length >= MinTickerLength && !HasNoMatches
+            ? OpenStockAsync(typed)
+            : Task.CompletedTask;
+    }
+
+    private async Task OpenStockAsync(string symbol)
+    {
+        SearchText = string.Empty; // limpa o texto e fecha a lista
+        await _navigation.GoToStockAsync(symbol);
     }
 
     // ------------------------------------------------------------------ Helpers

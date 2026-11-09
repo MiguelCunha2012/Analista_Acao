@@ -14,6 +14,12 @@ public interface IBrapiApiService
     /// <summary>Cotação atual + histórico de preços para o período.</summary>
     Task<BrapiQuoteResult> GetQuoteAsync(string symbol, TimeRange range, CancellationToken ct = default);
 
+    /// <summary>
+    /// Todas as ações listadas na B3 (uma chamada, com cache), usadas nas sugestões da
+    /// busca. O filtro é local, então digitar não gasta requisições da brapi.
+    /// </summary>
+    Task<IReadOnlyList<StockSummary>> GetStockCatalogAsync(CancellationToken ct = default);
+
     /// <summary>Descarta o cache em memória (ex.: botão "Atualizar").</summary>
     void InvalidateCache();
 }
